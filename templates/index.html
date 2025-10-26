@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My To-Do List - Stay Organized</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    /* ====== General Styles ====== */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #74b9ff, #a29bfe);
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 800px;
+      margin: 60px auto;
+      padding: 20px;
+      background: #ffffffdd;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #2d3436;
+      font-size: 32px;
+      margin-bottom: 30px;
+    }
+
+    /* ====== Form Styles ====== */
+    form {
+      display: flex;
+      flex-direction: column;
+      background: #f1f2f6;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      margin-bottom: 30px;
+    }
+    input[type="text"],
+    textarea,
+    input[type="datetime-local"] {
+      padding: 12px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      border: 1px solid #dfe6e9;
+      font-size: 16px;
+      width: 100%;
+      background: #ffffff;
+    }
+    button {
+      padding: 12px;
+      background: #0984e3;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: #74b9ff;
+    }
+
+    /* ====== Task List Styles ====== */
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+      transition: transform 0.2s ease;
+    }
+    li:hover {
+      transform: scale(1.02);
+    }
+    .task-info {
+      display: flex;
+      flex-direction: column;
+    }
+    .task-title {
+      font-weight: 600;
+      font-size: 20px;
+      color: #2d3436;
+    }
+    .task-desc {
+      font-size: 15px;
+      color: #636e72;
+      margin-top: 5px;
+    }
+    .task-deadline {
+      font-size: 13px;
+      color: #d63031;
+      margin-top: 5px;
+    }
+    .completed {
+      text-decoration: line-through;
+      color: #b2bec3;
+    }
+
+    .buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .buttons form {
+      display: inline-block;
+    }
+    .buttons button {
+      background: #00b894;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .buttons button.delete {
+      background: #d63031;
+    }
+    .buttons button:hover {
+      opacity: 0.9;
+    }
+
+    /* ====== Floating Profile ====== */
+    .floating-profile {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #ffffffdd;
+      padding: 10px 15px;
+      border-radius: 12px;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+      font-size: 14px;
+      color: #2d3436;
+      z-index: 1000;
+      animation: float 2s ease-in-out infinite alternate;
+    }
+
+    .floating-profile a {
+      color: #0984e3;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .floating-profile a:hover {
+      text-decoration: underline;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      100% { transform: translateY(-10px); }
+    }
+  </style>
+</head>
+<body>
+  <!-- ====== Floating Name & LinkedIn ====== -->
+  <div class="floating-profile">
+    <span>Aviral Jain</span> | 
+    <a href="https://www.linkedin.com/in/aviral-jain-a224a12a5/" target="_blank">
+      LinkedIn
+    </a>
+  </div>
+
+  <div class="container">
+    <h1>📝 My To-Do List</h1>
+
+    <!-- ====== Add Task Form ====== -->
+    <form action="/add" method="POST">
+      <input type="text" name="title" placeholder="Task title" required />
+      <textarea name="description" placeholder="Task description (optional)"></textarea>
+      <input type="datetime-local" name="deadline" />
+      <button type="submit"><i class="fas fa-plus-circle"></i> Add Task</button>
+    </form>
+
+    <!-- ====== Task List ====== -->
+    <ul>
+      {% for task in tasks %}
+      <li>
+        <div class="task-info">
+          <span class="task-title {% if task.complete %}completed{% endif %}">{{ task.title }}</span>
+          {% if task.description %}
+          <span class="task-desc {% if task.complete %}completed{% endif %}">{{ task.description }}</span>
+          {% endif %}
+          {% if task.deadline %}
+          <span class="task-deadline {% if task.complete %}completed{% endif %}">
+            Deadline: {{ task.deadline.strftime('%Y-%m-%d %H:%M') }}
+          </span>
+          {% endif %}
+        </div>
+        <div class="buttons">
+          <form action="/toggle/{{ task.id }}" method="POST">
+            <button type="submit">
+              <i class="fas fa-check-circle"></i>
+              {% if task.complete %}Undo{% else %}Complete{% endif %}
+            </button>
+          </form>
+          <form action="/delete/{{ task.id }}" method="POST">
+            <button type="submit" class="delete">
+              <i class="fas fa-trash-alt"></i> Delete
+            </button>
+          </form>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</body>
+</html>
